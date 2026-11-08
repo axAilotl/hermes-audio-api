@@ -22,9 +22,12 @@ def test_requires_bearer_key(fake_core) -> None:
     async def scenario(client):
         missing = await client.post(URL, data=_form())
         wrong = await client.post(URL, data=_form(), headers={"Authorization": "Bearer nope"})
-        return missing.status, wrong.status
+        non_ascii = await client.post(
+            URL, data=_form(), headers={"Authorization": "Bearer clé".encode().decode("latin-1")}
+        )
+        return missing.status, wrong.status, non_ascii.status
 
-    assert run_with_client(Settings(), scenario) == (401, 401)
+    assert run_with_client(Settings(), scenario) == (401, 401, 401)
     assert fake_core.transcribe_calls == []
 
 

@@ -52,7 +52,9 @@ def _check_auth(request: web.Request) -> web.Response | None:
     expected = request.app[API_KEY_KEY]
     header = request.headers.get("Authorization", "")
     scheme, _, token = header.partition(" ")
-    if scheme.lower() == "bearer" and token and hmac.compare_digest(token.strip(), expected):
+    # Compare bytes: compare_digest raises on non-ASCII str, which would turn a bad key into a 500.
+    supplied = token.strip().encode("utf-8", "surrogateescape")
+    if scheme.lower() == "bearer" and supplied and hmac.compare_digest(supplied, expected.encode()):
         return None
     return _error("Invalid or missing API key.", 401, err_type="authentication_error",
                   code="invalid_api_key")
