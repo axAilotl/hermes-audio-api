@@ -1,0 +1,52 @@
+name: hermes-audio-api
+label: Audio API
+version: 0.1.0
+description: "OpenAI-compatible /v1/audio speech and transcription endpoints for Hermes."
+author: axAilotl
+kind: platform
+requires_hermes: ">=0.23.0"
+license: MIT
+homepage: https://github.com/axAilotl/hermes-audio-api
+tags: [gateway, audio, tts, stt]
+python_dependencies:
+  - "aiohttp>=3.9,<4"
+config_schema:
+  api_key:
+    type: secret
+    env: AUDIO_API_KEY
+    label: "API key"
+    description: "Bearer key clients send. Leave unset to reuse API_SERVER_KEY."
+  reuse_api_server_key:
+    type: bool
+    default: true
+    label: "Reuse API_SERVER_KEY"
+    description: "Accept the API server's key when AUDIO_API_KEY is not set."
+  host:
+    type: str
+    default: "127.0.0.1"
+    description: "Listen address. Use 0.0.0.0 only behind a firewall or reverse proxy."
+  port:
+    type: int
+    default: 8643
+  max_upload_mb:
+    type: int
+    default: 25
+    label: "Max upload (MB)"
+    description: "Largest audio file accepted by /v1/audio/transcriptions."
+  max_input_chars:
+    type: int
+    default: 4096
+    description: "Longest 'input' accepted by /v1/audio/speech."
+  max_concurrency:
+    type: int
+    default: 2
+    description: "Transcription and speech jobs run at the same time."
+  cors_origins:
+    type: list
+    default: []
+    label: "CORS origins"
+    description: "Browser origins allowed to call the API, or [\"*\"]."
+  pass_voice:
+    type: bool
+    default: false
+    description: "Forward the request's 'voice' to the TTS provider as its voice ID."
