@@ -9,7 +9,6 @@ makes the coupling visible and keeps a host-side move to a single fix.
 from __future__ import annotations
 
 import json
-import os
 from typing import Any
 
 
@@ -62,5 +61,6 @@ def get_secret(name: str) -> str:
     try:
         value = scoped_get_secret(name, None)
     except UnscopedSecretError:
-        value = os.getenv(name)
+        # Ambient credentials may belong to a different multiplexed profile.
+        return ""
     return (value or "").strip()

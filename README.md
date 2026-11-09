@@ -113,8 +113,12 @@ provider that ignores the requested output path may leave its file in its own
 cache, as it would for any other Hermes TTS call.
 
 Under `gateway.multiplex_profiles` each profile that enables the plugin binds
-its own configured port, so give them different ports. That mode is not
-covered by the tests yet.
+its own configured port, so give them different ports. The listener requires
+an active profile secret scope containing `AUDIO_API_KEY` (or `API_SERVER_KEY`
+when reuse is enabled). Missing scopes and scoped keys fail closed, even if
+the process environment contains another profile's key. Tests cover credential
+isolation and refusal to start an unscoped listener; concurrent listeners for
+multiple profiles are not covered yet.
 
 ## Hermes internals used
 

@@ -119,3 +119,30 @@ def test_adapter_refuses_to_start_without_a_key(hermes_home, monkeypatch) -> Non
         assert asyncio.run(adapter.connect()) is False
     finally:
         manager.unload()
+
+
+def test_unscoped_multiplex_does_not_enable_or_start_listener(hermes_home, monkeypatch):
+    from agent import secret_scope
+    from gateway.config import Platform, PlatformConfig, load_gateway_config
+    from hermes_cli.plugins import PluginManager
+
+    monkeypatch.setenv("AUDIO_API_KEY", "other-profile-key")
+    monkeypatch.setenv("API_SERVER_KEY", "other-server-key")
+    port = _free_port()
+    hermes_home(port)
+    previous = secret_scope.is_multiplex_active()
+    token = secret_scope.set_secret_scope(None)
+    secret_scope.set_multiplex_active(True)
+    manager = PluginManager()
+    try:
+        entry = _load(manager)
+        configured = load_gateway_config().platforms.get(Platform("audio_api"))
+        assert configured is None or not configured.enabled
+        adapter = entry.adapter_factory(PlatformConfig(enabled=True))
+        assert asyncio.run(adapter.connect()) is False
+        with socket.socket() as probe:
+            probe.bind(("127.0.0.1", port))
+    finally:
+        manager.unload()
+        secret_scope.reset_secret_scope(token)
+        secret_scope.set_multiplex_active(previous)
